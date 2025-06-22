@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Choice;
+use App\Models\Level;
+use App\Models\Subject;
 use App\Models\user;
 use Exception;
 use Illuminate\Http\Request;
@@ -253,4 +256,234 @@ class AdminController extends Controller
 
         return response()->json(['message' => 'User account deactivated successfully', 'user' => $user]);
     }
+
+    public function addLevel(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255|unique:levels,name',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $level = Level::create($request->only('name', 'description'));
+            return response()->json(['message' => 'Level added successfully', 'level' => $level], 201);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Failed to add level', 'details' => $e->getMessage()], 500);
+        }
+    }
+    public function deleteLevel(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:levels,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $level = Level::findOrFail($request->id);
+            $level->delete();
+            return response()->json(['message' => 'Level deleted successfully'], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Failed to delete level', 'details' => $e->getMessage()], 500);
+        }
+    }
+    public function editLevel(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:levels,id',
+            'name' => 'sometimes|string|max:255|unique:levels,name,' . $request->id,
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $level = Level::findOrFail($request->id);
+            $level->update($request->only('name', 'description'));
+            return response()->json(['message' => 'Level updated successfully', 'level' => $level], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Failed to update level', 'details' => $e->getMessage()], 500);
+        }
+    }
+    public function showLevel(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:levels,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $level = Level::with('choices')->findOrFail($request->id);
+            return response()->json(['message' => 'Level retrieved successfully', 'level' => $level], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Failed to retrieve level', 'details' => $e->getMessage()], 500);
+        }
+    }
+
+    public function addChoices(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'level_id' => 'required|exists:levels,id',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $level = Level::findOrFail($request->level_id);
+            $choice = $level->choices()->create($request->only('name', 'description'));
+            return response()->json(['message' => 'Choice added successfully', 'choice' => $choice], 201);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Failed to add choice', 'details' => $e->getMessage()], 500);
+        }
+    }
+    public function deleteChoices(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:choices,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $choice = Choice::findOrFail($request->id);
+            $choice->delete();
+            return response()->json(['message' => 'Choice deleted successfully'], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Failed to delete choice', 'details' => $e->getMessage()], 500);
+        }
+    }
+    public function editChoices(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:choices,id',
+            'name' => 'sometimes|string|max:255',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $choice = Choice::findOrFail($request->id);
+            $choice->update($request->only('name', 'description'));
+            return response()->json(['message' => 'Choice updated successfully', 'choice' => $choice], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Failed to update choice', 'details' => $e->getMessage()], 500);
+        }
+    }
+    public function showChoices(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:choices,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $choice = Choice::with(['level', 'subject'])->findOrFail($request->id);
+            return response()->json(['message' => 'Choice retrieved successfully', 'choice' => $choice], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Failed to retrieve choice', 'details' => $e->getMessage()], 500);
+        }
+    }
+
+    public function addSubject(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'choice_id' => 'required|exists:choices,id',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'coefficient' => 'required|numeric|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $choice = Choice::findOrFail($request->choice_id);
+            $subject = $choice->subjects()->create($request->only('name', 'description', 'coefficient'));
+            return response()->json(['message' => 'Subject added successfully', 'subject' => $subject], 201);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Failed to add subject', 'details' => $e->getMessage()], 500);
+        }
+    }
+    public function deleteSubject(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:subjects,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $subject = Subject::findOrFail($request->id);
+            $subject->delete();
+            return response()->json(['message' => 'Subject deleted successfully'], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Failed to delete subject', 'details' => $e->getMessage()], 500);
+        }
+    }
+    public function editSubject(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:subjects,id',
+            'name' => 'sometimes|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'coefficient' => 'sometimes|numeric|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $subject = Subject::findOrFail($request->id);
+            $subject->update($request->only('name', 'description', 'coefficient'));
+            return response()->json(['message' => 'Subject updated successfully', 'subject' => $subject], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Failed to update subject', 'details' => $e->getMessage()], 500);
+        }
+    }
+    public function showSubject(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:subjects,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $subject = Subject::with('choice')->findOrFail($request->id);
+            return response()->json(['message' => 'Subject retrieved successfully', 'subject' => $subject], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Failed to retrieve subject', 'details' => $e->getMessage()], 500);
+        }
+    }
+
+
 }
