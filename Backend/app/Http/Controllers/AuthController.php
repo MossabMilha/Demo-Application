@@ -16,8 +16,13 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
+        // Check if the user exists and the password is correct
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
+        }
+        // Check if the user is active
+        if(!$user->is_active){
+            return response()->json(['message' => 'User is not active'], 403);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;

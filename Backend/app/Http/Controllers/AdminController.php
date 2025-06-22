@@ -232,4 +232,25 @@ class AdminController extends Controller
         ]);
 
     }
+    public function activeUserAccount(Request $request)
+    {
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+        $user->is_active = 1;
+        $user->save();
+
+        return response()->json(['message' => 'User account activated successfully', 'user' => $user]);
+    }
+    public function  deactivateUserAccount(Request $request){
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+        $user->is_active = 0;
+        $user->save();
+
+        return response()->json(['message' => 'User account deactivated successfully', 'user' => $user]);
+    }
 }

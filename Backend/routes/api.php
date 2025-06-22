@@ -18,4 +18,6 @@ Route::post('login', [AuthController::class, 'login']);
 
 Route::post('Admin/CreateUser', [AdminController::class, 'createUser']);
 Route::post('Admin/UpdateUser', [AdminController::class, 'updateUser']);
+Route::post('Admin/ActiveUserAccount', [AdminController::class, 'activeUserAccount']);
+Route::post('Admin/DeactivateUserAccount', [AdminController::class, 'deactivateUserAccount']);
 Route::GET('Admin/ShowUsers', [AdminController::class, 'ShowUsers']);
