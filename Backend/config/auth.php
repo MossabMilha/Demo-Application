@@ -58,6 +58,10 @@ return [
     | Supported: "database", "eloquent"
     |
     */
+    'api' => [
+        'driver' => 'sanctum',
+        'provider' => 'users',
+    ],
 
     'providers' => [
         'users' => [
