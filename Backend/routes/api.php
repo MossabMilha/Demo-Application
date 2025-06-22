@@ -17,3 +17,5 @@ Route::post('login', [AuthController::class, 'login']);
 
 
 Route::post('Admin/CreateUser', [AdminController::class, 'createUser']);
+Route::post('Admin/UpdateUser', [AdminController::class, 'updateUser']);
+Route::GET('Admin/ShowUsers', [AdminController::class, 'ShowUsers']);

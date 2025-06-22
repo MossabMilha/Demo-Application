@@ -59,7 +59,9 @@ class user extends Authenticatable
         $date = DateTime::createFromFormat('Y-m-d', $birth_date);
         return $date && $date->format('Y-m-d') === $birth_date;
     }
-
+    public static function checkPhone($phone){
+        return preg_match('/^\+\d{1,3} \d{9}$/', $phone) === 1;
+    }
     public static function generateStrongPassword(int $length = 12): string
     {
         $upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -86,22 +88,6 @@ class user extends Authenticatable
 
         return implode('', $password);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     // Relationships

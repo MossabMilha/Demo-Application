@@ -38,9 +38,15 @@ class AppServiceProvider extends ServiceProvider
         Validator::extend('check_birthday', function ($attribute, $value, $parameters, $validator) {
             return User::checkBirth_date($value);
         }, 'The :attribute format is invalid.');
+        Validator::extend('check_phone', function ($attribute, $value, $parameters, $validator) {
+            return User::checkPhone($value);
+        }, 'The :attribute format is invalid.');
+
 
         Validator::extend('valid_student_code', function ($attribute, $value, $parameters, $validator) {
             return student::checkStudent_code($value);
         }, 'The :attribute format is invalid.');
+
+
     }
 }
